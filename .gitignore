@@ -1,6 +1,6 @@
 datasets/
 .vscode/
-.env
+.venv
 .env.local
 .env.*.local
 *.log
