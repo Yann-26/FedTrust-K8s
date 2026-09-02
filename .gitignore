@@ -1,7 +1,5 @@
+.venv/
+venv/
+env/
+ENV/
 datasets/
-.vscode/
-.venv
-.env.local
-.env.*.local
-*.log
-.DS_Store
