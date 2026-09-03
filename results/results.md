@@ -351,7 +351,7 @@ Gradient Similarity Matrix (cosine similarity):
 
 ### Conclusion
 
-This experiment reveals a fascinating tradeoff: the same statistical heterogeneity that reduces model accuracy also provides natural privacy protection. For applications where data is naturally non-IID (like the WALTZ scenario with different municipalities), the inherent privacy may be sufficient without adding expensive DP mechanisms.
+In this experimental configuration, strong statistical heterogeneity was associated with low inter-client gradient similarity, while the implemented membership-inference attack achieved an AUC of 0.5236, close to random guessing. These results suggest limited attack effectiveness under the evaluated conditions, but do not establish that non-IID data intrinsically provides privacy.
 
 ### Recommendations
 
