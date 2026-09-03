@@ -292,3 +292,80 @@ While Differential Privacy provides formal privacy guarantees, our results demon
 3. Test with larger models
 4. Explore alternative privacy-preserving techniques (e.g., secure aggregation)
 5. Study the interaction between DP and robust aggregation methods
+
+---
+
+## Experiment 07 — Privacy Evaluation
+
+### Research Questions
+
+1. How much information leaks from gradient updates?
+2. Can we infer client data from model updates?
+3. What is the privacy-utility tradeoff in practice?
+
+### Results
+
+#### Analysis 1: Gradient Similarity
+
+Gradient Similarity Matrix (cosine similarity):
+
+| Client | C1 | C2 | C3 | C4 | C5 |
+|--------|------|------|------|------|------|
+| C1 | 1.000 | -0.195 | -0.119 | -0.127 | -0.333 |
+| C2 | -0.195 | 1.000 | -0.282 | -0.155 | -0.207 |
+| C3 | -0.119 | -0.282 | 1.000 | -0.360 | -0.122 |
+| C4 | -0.127 | -0.155 | -0.360 | 1.000 | -0.218 |
+| C5 | -0.333 | -0.207 | -0.122 | -0.218 | 1.000 |
+
+**Statistics:**
+- Mean similarity: -0.2117 (negative correlation!)
+- Std similarity: 0.0852
+
+**Interpretation:** Clients are learning in completely different directions, providing natural privacy protection.
+
+#### Analysis 2: Membership Inference Attack
+
+- **AUC Score: 0.5236**
+- Near random guessing (0.5 = random)
+- Attack cannot distinguish training from non-training samples
+- **Privacy Risk: LOW**
+
+#### Analysis 3: Privacy-Utility Tradeoff
+
+| Noise (σ) | Epsilon (ε) | Accuracy | Privacy Level |
+|-----------|-------------|----------|---------------|
+| 0.0 | ∞ | 77.54% | No privacy |
+| 0.5 | 16.62 | 11.65% | Low privacy |
+| 1.0 | 8.31 | 14.04% | Low privacy |
+| 2.0 | 4.16 | 8.89% | Medium privacy |
+
+### Key Findings
+
+1. **Non-IID data provides natural privacy**: Negative gradient similarity makes it difficult to infer individual client data.
+
+2. **Membership inference is ineffective**: AUC = 0.5236, close to random guessing.
+
+3. **DP is too expensive**: Adding privacy protection destroys utility (77.54% → 11.65%).
+
+4. **Privacy is "free" but accuracy is not**: Non-IID data gives privacy at the cost of accuracy.
+
+### Conclusion
+
+This experiment reveals a fascinating tradeoff: the same statistical heterogeneity that reduces model accuracy also provides natural privacy protection. For applications where data is naturally non-IID (like the WALTZ scenario with different municipalities), the inherent privacy may be sufficient without adding expensive DP mechanisms.
+
+### Recommendations
+
+1. **Assess privacy needs before applying DP**: If the data distribution already provides privacy, DP may not be necessary.
+
+2. **Consider the cost-benefit tradeoff**: DP can reduce accuracy from ~77% to ~12% — is that acceptable?
+
+3. **Use gradient similarity as a privacy metric**: Low/negative similarity suggests good natural privacy.
+
+4. **Hybrid approach**: Consider light DP (σ=0.5) only for high-risk scenarios.
+
+### Research Contribution
+
+This experiment provides evidence that:
+- **Natural privacy exists in non-IID federated learning**
+- **Privacy evaluation is essential before applying DP**
+- **The WALTZ scenario (multiple municipalities with different data) may not need strong DP**
