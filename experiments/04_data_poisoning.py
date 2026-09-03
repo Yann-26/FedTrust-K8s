@@ -18,10 +18,61 @@ LOCAL_EPOCHS = 1
 BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 
-BYZANTINE_CLIENT_ID = 4  # Client 5 (0-indexed) will be malicious
+POISONED_CLIENT_ID = 4  # Client 5 (0-indexed) will be poisoned
+POISON_TARGET_LABEL = 0  # Flip labels to this class
+POISON_FRACTION = 0.5  # 50% of data will be poisoned
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# ============================================================
+# Data Poisoning
+# ============================================================
+
+
+def poison_dataset(dataset, target_label, poison_fraction):
+    """
+    Poison a dataset by flipping labels to the target class.
+    """
+    poisoned_indices = []
+    clean_indices = []
+
+    # Get all indices
+    all_indices = list(range(len(dataset)))
+
+    # Separate by current label
+    for idx in all_indices:
+        _, label = dataset[idx]
+        if label != target_label:
+            poisoned_indices.append(idx)
+        else:
+            clean_indices.append(idx)
+
+    # Determine how many to poison
+    num_to_poison = int(len(poisoned_indices) * poison_fraction)
+
+    # Randomly select indices to poison
+    import random
+
+    random.seed(42)  # For reproducibility
+    selected_indices = random.sample(poisoned_indices, num_to_poison)
+
+    # Create a wrapper that returns poisoned labels
+    class PoisonedDataset:
+        def __init__(self, original_dataset, poison_indices, target_label):
+            self.original_dataset = original_dataset
+            self.poison_indices = set(poison_indices)
+            self.target_label = target_label
+
+        def __getitem__(self, idx):
+            data, label = self.original_dataset[idx]
+            if idx in self.poison_indices:
+                return data, self.target_label
+            return data, label
+
+        def __len__(self):
+            return len(self.original_dataset)
+
+    return PoisonedDataset(dataset, selected_indices, target_label)
 
 # ============================================================
 # Model
@@ -201,31 +252,11 @@ def evaluate(model):
 
 
 # ============================================================
-# Byzantine Attack
-# ============================================================
-
-
-def byzantine_attack(model_weights):
-    """
-    Simulates a Byzantine client by flipping the sign of gradients.
-    Instead of sending improved weights, the client sends weights
-    that move away from the global model.
-    """
-    attacked_weights = {}
-
-    for key in model_weights.keys():
-        # Flip the sign of all parameters
-        attacked_weights[key] = -model_weights[key]
-
-    return attacked_weights
-
-
-# ============================================================
-# Federated Training with Byzantine Client
+# Federated Training with Data Poisoning
 # ============================================================
 
 print("=" * 65)
-print("FedTrust-K8s — Experiment 03: Byzantine Client Attack")
+print("FedTrust-K8s — Experiment 04: Data Poisoning Attack")
 print("=" * 65)
 print(f"Clients          : {NUM_CLIENTS}")
 print(f"Federated rounds : {ROUNDS}")
@@ -239,7 +270,9 @@ print("Client 3 → digits 4, 5")
 print("Client 4 → digits 6, 7")
 print("Client 5 → digits 8, 9")
 print("-" * 65)
-print(f"⚠️  CLIENT {BYZANTINE_CLIENT_ID + 1} IS BYZANTINE (MALICIOUS)")
+print(f"💀 CLIENT {POISONED_CLIENT_ID + 1} IS POISONED")
+print(f"   Target label: {POISON_TARGET_LABEL}")
+print(f"   Poison fraction: {POISON_FRACTION * 100}%")
 print("=" * 65)
 
 global_model = SimpleCNN()
@@ -250,21 +283,14 @@ for round_number in range(1, ROUNDS + 1):
     client_models = []
 
     for client_id in range(NUM_CLIENTS):
-        # Check if this client is Byzantine
-        is_byzantine = client_id == BYZANTINE_CLIENT_ID
+        is_poisoned = client_id == POISONED_CLIENT_ID
 
-        if is_byzantine:
-            print(f"⚠️  Client {client_id + 1} (BYZANTINE) preparing attack...")
+        if is_poisoned:
+            print(f"💀 Client {client_id + 1} (POISONED DATA) training...")
         else:
             print(f"Training Client {client_id + 1}...")
 
-        # Train the client normally
         local_weights = train_client(global_model, client_datasets[client_id])
-
-        # Apply Byzantine attack if this is the malicious client
-        if is_byzantine:
-            print(f"💀 Client {client_id + 1} performing Byzantine attack!")
-            local_weights = byzantine_attack(local_weights)
 
         client_models.append(local_weights)
 
@@ -279,5 +305,5 @@ for round_number in range(1, ROUNDS + 1):
 print("\n" + "=" * 65)
 print("Federated training completed.")
 print("=" * 65)
-print("⚠️  ONE BYZANTINE CLIENT WAS PRESENT")
+print("💀 DATA POISONING ATTACK WAS PRESENT")
 print("=" * 65)
