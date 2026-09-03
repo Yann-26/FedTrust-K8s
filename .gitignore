@@ -5,3 +5,37 @@ ENV/
 datasets/
 __pycache__/
 *.pyc
+
+# Python
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Data
+datasets/
+*.log
+
+# Results (keep results.md but ignore generated files)
+results/figures/
+*.png
+*.jpg
+*.pdf
+
+# OS
+.DS_Store
+Thumbs.db

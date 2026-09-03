@@ -1,0 +1,23 @@
+experiment:
+  name: "Differential Privacy"
+  id: 06
+  
+model:
+  type: "SimpleCNN"
+  
+data:
+  dataset: "MNIST"
+  num_clients: 5
+  distribution: "non_iid"
+  
+training:
+  rounds: 5
+  local_epochs: 1
+  batch_size: 64
+  learning_rate: 0.001
+  
+privacy:
+  enabled: true
+  sensitivity: 1.0
+  noise_multipliers: [0.0, 0.5, 1.0, 2.0]
+  delta: 1e-5
