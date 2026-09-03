@@ -423,4 +423,4 @@ The SimpleCNN (206k parameters) is the most practical choice for this research p
 
 ### Figure
 
-![GPU Scaling Results](figures/gpu_scaling_results.png)
+![GPU Scaling Results] <img width="1783" height="1484" alt="Image" src="https://github.com/user-attachments/assets/5ff022f4-0fd8-4dea-b69b-b3ae4b1d7d5d" />
